@@ -8,16 +8,17 @@ const GlobeComp = fromThree(ThreeGlobe, {
   methodNames: ['getGlobeRadius', 'getCoords', 'toGeoCoords', 'pauseAnimation', 'resumeAnimation', 'setPointOfView']
 });
 
-const getGlobeEventObj = ({ intersections }) => {
+const getGlobeEventObj = ({ intersection, intersections }) => {
   const lookupGlobeObj = o => // recurse up object chain until finding the globe object
     !o ? null : o.hasOwnProperty('__globeObjType') ? o : lookupGlobeObj(o.parent);
-
-  const intersection =  intersections.find(d => {
+  
+  // XR pmndrs intersection https://pmndrs.github.io/xr/docs/tutorials/interactions
+  const globeObjIntersection = (intersection ? [intersection] : intersections).find(d => {
     const gObj = lookupGlobeObj(d.object);
     return gObj && gObj.__globeObjType !== 'atmosphere';
   });
 
-  return [lookupGlobeObj(intersection?.object), intersection];
+  return [lookupGlobeObj(globeObjIntersection?.object), globeObjIntersection];
 };
 
 const getObjData = ((obj, intersection) => (({
