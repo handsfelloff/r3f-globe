@@ -131998,19 +131998,17 @@ var<${access}> ${ name } : ${ structName };`;
       i = 0;
     }
     _regeneratorDefine = function (e, r, n, t) {
-      if (r) i ? i(e, r, {
+      function o(r, n) {
+        _regeneratorDefine(e, r, function (e) {
+          return this._invoke(r, n, e);
+        });
+      }
+      r ? i ? i(e, r, {
         value: n,
         enumerable: !t,
         configurable: !t,
         writable: !t
-      }) : e[r] = n;else {
-        function o(r, n) {
-          _regeneratorDefine(e, r, function (e) {
-            return this._invoke(r, n, e);
-          });
-        }
-        o("next", 0), o("throw", 1), o("return", 2);
-      }
+      }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2));
     }, _regeneratorDefine(e, r, n, t);
   }
   function _setPrototypeOf(t, e) {
@@ -132838,11 +132836,17 @@ var<${access}> ${ name } : ${ structName };`;
       arcStartLng: {
         "default": 'startLng'
       },
+      arcStartAltitude: {
+        "default": 0
+      },
       arcEndLat: {
         "default": 'endLat'
       },
       arcEndLng: {
         "default": 'endLng'
+      },
+      arcEndAltitude: {
+        "default": 0
       },
       arcColor: {
         "default": function _default() {
@@ -132948,8 +132952,10 @@ var<${access}> ${ name } : ${ structName };`;
       // Data accessors
       var startLatAccessor = index$1(state.arcStartLat);
       var startLngAccessor = index$1(state.arcStartLng);
+      var startAltAccessor = index$1(state.arcStartAltitude);
       var endLatAccessor = index$1(state.arcEndLat);
       var endLngAccessor = index$1(state.arcEndLng);
+      var endAltAccessor = index$1(state.arcEndAltitude);
       var altitudeAccessor = index$1(state.arcAltitude);
       var altitudeAutoScaleAccessor = index$1(state.arcAltitudeAutoScale);
       var strokeAccessor = index$1(state.arcStroke);
@@ -133025,8 +133031,10 @@ var<${access}> ${ name } : ${ structName };`;
           altAutoScale: +altitudeAutoScaleAccessor(arc),
           startLat: +startLatAccessor(arc),
           startLng: +startLngAccessor(arc),
+          startAlt: +startAltAccessor(arc),
           endLat: +endLatAccessor(arc),
-          endLng: +endLngAccessor(arc)
+          endLng: +endLngAccessor(arc),
+          endAlt: +endAltAccessor(arc)
         };
         var currentTargetD = group.__currentTargetD || Object.assign({}, targetD, {
           altAutoScale: -1e-3
@@ -133051,8 +133059,10 @@ var<${access}> ${ name } : ${ structName };`;
           altAutoScale = _ref4.altAutoScale,
           startLat = _ref4.startLat,
           startLng = _ref4.startLng,
+          startAlt = _ref4.startAlt,
           endLat = _ref4.endLat,
-          endLng = _ref4.endLng;
+          endLng = _ref4.endLng,
+          endAlt = _ref4.endAlt;
         var getVec = function getVec(_ref5) {
           var _ref6 = _slicedToArray$1(_ref5, 3),
             lng = _ref6[0],
@@ -133071,20 +133081,19 @@ var<${access}> ${ name } : ${ structName };`;
         var altitude = alt;
         (altitude === null || altitude === undefined) && (
         // by default set altitude proportional to the great-arc distance
-        altitude = geoDistance$1(startPnt, endPnt) / 2 * altAutoScale);
-        if (altitude) {
+        altitude = geoDistance$1(startPnt, endPnt) / 2 * altAutoScale + Math.max(startAlt, endAlt));
+        if (altitude || startAlt || endAlt) {
           var interpolate = geoInterpolate(startPnt, endPnt);
+          var calcAltCp = function calcAltCp(a0, a1) {
+            return a1 + (a1 - a0) * (a0 < a1 ? 0.5 : 0.25);
+          };
           var _map = [0.25, 0.75].map(function (t) {
-              return [].concat(_toConsumableArray$1(interpolate(t)), [altitude * 1.5]);
+              return [].concat(_toConsumableArray$1(interpolate(t)), [calcAltCp(t < 0.5 ? startAlt : endAlt, altitude)]);
             }),
             _map2 = _slicedToArray$1(_map, 2),
             m1Pnt = _map2[0],
             m2Pnt = _map2[1];
-          var curve = _construct(THREE$e.CubicBezierCurve3, _toConsumableArray$1([startPnt, m1Pnt, m2Pnt, endPnt].map(getVec)));
-
-          //const mPnt = [...interpolate(0.5), altitude * 2];
-          //curve = new THREE.QuadraticBezierCurve3(...[startPnt, mPnt, endPnt].map(getVec));
-
+          var curve = _construct(THREE$e.CubicBezierCurve3, _toConsumableArray$1([[].concat(startPnt, [startAlt]), m1Pnt, m2Pnt, [].concat(endPnt, [endAlt])].map(getVec)));
           return curve;
         } else {
           // ground line
@@ -135625,7 +135634,7 @@ var<${access}> ${ name } : ${ structName };`;
     return _defineProperty$1({}, p, bindPointsLayer.linkProp(p));
   })));
   var bindArcsLayer = linkKapsule('arcsLayer', ArcsLayerKapsule);
-  var linkedArcsLayerProps = Object.assign.apply(Object, _toConsumableArray$1(['arcsData', 'arcStartLat', 'arcStartLng', 'arcEndLat', 'arcEndLng', 'arcColor', 'arcAltitude', 'arcAltitudeAutoScale', 'arcStroke', 'arcCurveResolution', 'arcCircularResolution', 'arcDashLength', 'arcDashGap', 'arcDashInitialGap', 'arcDashAnimateTime', 'arcsTransitionDuration'].map(function (p) {
+  var linkedArcsLayerProps = Object.assign.apply(Object, _toConsumableArray$1(['arcsData', 'arcStartLat', 'arcStartLng', 'arcStartAltitude', 'arcEndLat', 'arcEndLng', 'arcEndAltitude', 'arcColor', 'arcAltitude', 'arcAltitudeAutoScale', 'arcStroke', 'arcCurveResolution', 'arcCircularResolution', 'arcDashLength', 'arcDashGap', 'arcDashInitialGap', 'arcDashAnimateTime', 'arcsTransitionDuration'].map(function (p) {
     return _defineProperty$1({}, p, bindArcsLayer.linkProp(p));
   })));
   var bindHexBinLayer = linkKapsule('hexBinLayer', HexBinLayerKapsule);
